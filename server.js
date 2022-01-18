@@ -26,24 +26,28 @@ app.get("/api/hello", function (req, res) {
 
 
 // your first API endpoint...
-app.get("/api/:time", function (req, res) {
+app.get(["/api/:time", "/api"], function (req, res) {
+  console.log(req.params.time);
   let out;
   let date;
   if (/^\d+$/.test(req.params.time)) {
     let intTime = parseInt(req.params.time, 10);
     date = new Date(intTime);
-    out = {
-      "unix": intTime,
-      "utc": date.toGMTString(),
-    };
   } else if (/^(\d{4})-\d{2}-\d{2}$/.test(req.params.time)) {
-    let date = getDateFromText(req.params.time);
-    out = {
-      "unix": date.getTime(),
-      "utc": date.toGMTString('utc', { timeZone: 'Europe/London' }),
-    };
+    date = getDateFromText(req.params.time);
+  } else if(req.params.time) {
+    date = new Date(req.params.time);
+    if (date.toString() !== "Invalid Date") {
+    } else {
+      return res.json({error: "Invalid Date"});
+    }
+  } else {
+    date = new Date();
   }
-  res.json(out);
+  return res.json({
+    "unix": date.getTime(), 
+    "utc": date.toGMTString()
+  });
 });
 
 // date should be formated as YYYY-MM-DD
